@@ -174,8 +174,8 @@ class BankController extends Controller
         $data = http_build_query([
             'client_id' => '00000000',
             'contractor_id' => '0000000000000000AG0123456789A001',
-            'date_from' => '',
-            'date_t' => '',
+            'date_from' => '2023/07/05',
+            'date_to' => '2023/07/07',
 
         ]);
         $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers/list?' . $data;
