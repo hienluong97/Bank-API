@@ -15,33 +15,34 @@ class BankController extends Controller
         return view('index');
     }
 
-    public function getBankOld(Request $request)
+    public function getCorporationInfo(Request $request)
     {
-
+        //get corporation information: 
         $ch = curl_init();
-
         $headers = [
-            'Authorization: Bearer ca5723130d3042eea0a6e6b7a97d0001',
-            'accept: application/json',
+            'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
         ];
-        curl_setopt($ch, CURLOPT_URL, 'https://sample.apigw.opencanvas.ne.jp/hiroshimabank_retail/v1/accounts/00100010100001000000000000000000');
+        $data = http_build_query([
+            'client_id' => '22222222',
+            'contractor_id' => '0000000000000000AG0123456789A001',
+            'target_service' => '20',
+        ]);
+        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/corporations?' . $data;
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
         $response = curl_exec($ch);
         curl_close($ch);
 
-        $jsonResponse = json_decode($response, true)['accounts'][0];
-        // dd($jsonResponse);
-        // return response()->json([
-        //     'accounts' => $jsonResponse,
-        // ]);
-        return view('acc_info')->with('account', $jsonResponse);
+        $corporation_info = json_decode($response, true);
+        // dd($corporation_info);
+        return view('corporation_info', compact('corporation_info'));
     }
 
-    public function getBank(Request $request)
+
+    public function getCorporationUsers(Request $request)
     {
-        //getManagerBankAccount: 
+        //get corporation BankAccount: 
         $ch = curl_init();
         $headers = [
             'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
@@ -58,7 +59,39 @@ class BankController extends Controller
         $response = curl_exec($ch);
         curl_close($ch);
 
-        $account = json_decode($response, true)['accounts'][0];
+        $accounts = json_decode($response, true)['accounts'];
+        return view('corporation_users', compact('accounts'));
+    }
+
+
+    public function createRequestTransfer(Request $request)
+    {
+        $ch = curl_init();
+        $headers = [
+            'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
+        ];
+        $data = http_build_query([
+            'client_id' => '22222222',
+            'contractor_id' => '0000000000000000AG0123456789A001',
+            'target_service' => '20',
+        ]);
+        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/users?' . $data;
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        $accounts = json_decode($response, true)['accounts'];
+        return view('create_request_transfer', compact('accounts'));
+    }
+
+    public function storeTransfer(Request $request)
+    {
+
+        $remitter_name = $request->input('remitter_name');
+        $remitter_code = $request->input('remitter_code');
+        $remitting_bank_branch_name = $request->input('branch_name_kana');
+        $remitting_account_number = $request->input('account_number');
 
         //createTransfer: 
         $ch = curl_init();
@@ -75,15 +108,15 @@ class BankController extends Controller
             'fixed_request_data' => [
                 'transaction_notes' => '10月1日振込',
                 'category_code' => '21',
-                'remitter_code' => '1234567891',
-                'remitter_name' => $account['remitter_info'][0]['remitter_name_info'][0]['remitter_name'],
+                'remitter_code' =>  $remitter_code,
+                'remitter_name' => $remitter_name,
                 'effort_date' => '04-01',
                 'remitting_bank_code' =>  0034,
                 'remitting_bank_name' => 'seven bank',
                 'remitting_branch_code' => '115',
-                'remitting_bank_branch_name' => 'ﾄｳｷｮｳﾎﾝﾃﾝ', $account['branch_name_kana'],
+                'remitting_bank_branch_name' =>   $remitting_bank_branch_name,
                 'remitting_account_type_code' => '01',
-                'remitting_account_number' => $account['account_number'],
+                'remitting_account_number' =>    $remitting_account_number,
                 'dummy_header' => 'ｷﾝﾕｳｷｶﾝﾚﾝｹｲｼﾞｮｳﾎｳ',
                 'transactions' => [
                     [
@@ -128,10 +161,39 @@ class BankController extends Controller
         $response = curl_exec($ch);
         curl_close($ch);
         $transfer = json_decode($response, true);
-        // dd($transfer['transaction_id']);
+        return view('create_transfer_result')->with('transfer', $transfer);
+    }
 
 
-        //confirnTransfer: 
+    public function showListRequestTransfer(Request $request)
+    {
+        $ch = curl_init();
+        $headers = [
+            'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
+        ];
+        $data = http_build_query([
+            'client_id' => '00000000',
+            'contractor_id' => '0000000000000000AG0123456789A001',
+            'date_from' => '',
+            'date_t' => '',
+
+        ]);
+        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers/list?' . $data;
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $transaction_list_info = json_decode($response, true)['transaction_list_info'];
+        return view('list_transfer_confirm', compact('transaction_list_info'));
+    }
+
+
+    public function confirmTransaction(Request $request)
+    {
+        $transaction_id = $request->input('transaction_id');
+
         $ch = curl_init();
         $headers = [
             'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
@@ -146,19 +208,17 @@ class BankController extends Controller
             'comment' => 'コメント',
         ];
 
-
         $jsonData = json_encode($confirmData);
 
-        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers/' . $transfer['transaction_id'] . '/submissions';
+        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers/' . $transaction_id . '/submissions';
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
         $response = curl_exec($ch);
         curl_close($ch);
-        $confirmtransfer = json_decode($response, true);
-        // dd($confirmtransfer);
-        // $jsonResponse = json_decode($response, true)['accounts'][0];
-        return view('acc_info')->with('confirmtransfer', $confirmtransfer['transaction_status_name']);
+        $confirmTransaction = json_decode($response, true);
+        // dd($confirmTransaction);
+        return view('transaction_confirm_result')->with('confirmTransaction', $confirmTransaction);
     }
 }

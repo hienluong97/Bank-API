@@ -16,5 +16,10 @@ use App\Http\Controllers\BankController;
 
 
 Route::get('/', [BankController::class, 'index'])->name('index');
-Route::get('/bank', [BankController::class, 'bank'])->name('bank');
-Route::get('/getBank', [BankController::class, 'getBank'])->name('getBank');
+
+Route::get('/corporation-info', [BankController::class, 'getCorporationInfo'])->name('getCorporationInfo');
+Route::get('/corporation-users', [BankController::class, 'getCorporationUsers'])->name('getCorporationUsers');
+Route::get('/create-request-transfer', [BankController::class, 'createRequestTransfer'])->name('createRequestTransfer');
+Route::get('/show-list-request-transfer', [BankController::class, 'showListRequestTransfer'])->name('showListRequestTransfer');
+Route::post('/store-transfer', [BankController::class, 'storeTransfer'])->name('storeTransfer');
+Route::post('/confirm-transaction', [BankController::class, 'confirmTransaction'])->name('confirmTransaction');
