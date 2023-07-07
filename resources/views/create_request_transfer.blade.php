@@ -3,7 +3,7 @@
 <form id="transfer" action="{{ route('storeTransfer') }}" method="POST">
     @csrf
 
-<label for="">First account_id:</label>
+<label for="">Account_id:</label>
 <input style ="border: none" name="account_id" readonly value="{{ $account['account_id']}}">  <br/>
 
 <label for="">Account:</label>

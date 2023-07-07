@@ -15,10 +15,11 @@ class BankController extends Controller
         return view('index');
     }
 
+    //get corporation information: 
+
     public function getCorporationInfo(Request $request)
     {
-        //get corporation information: 
-        $ch = curl_init();
+        $curl = curl_init();
         $headers = [
             'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
         ];
@@ -27,23 +28,32 @@ class BankController extends Controller
             'contractor_id' => '0000000000000000AG0123456789A001',
             'target_service' => '20',
         ]);
-        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/corporations?' . $data;
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        $response = curl_exec($ch);
-        curl_close($ch);
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/corporations?" . $data,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
 
-        $corporation_info = json_decode($response, true);
-        // dd($corporation_info);
-        return view('corporation_info', compact('corporation_info'));
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+            $corporation_info = json_decode($response, true);
+            return view('corporation_info', compact('corporation_info'));
+        }
     }
 
-
+    //get corporation BankAccount: 
     public function getCorporationUsers(Request $request)
     {
-        //get corporation BankAccount: 
-        $ch = curl_init();
+        $curl = curl_init();
         $headers = [
             'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
         ];
@@ -52,21 +62,32 @@ class BankController extends Controller
             'contractor_id' => '0000000000000000AG0123456789A001',
             'target_service' => '20',
         ]);
-        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/users?' . $data;
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        $response = curl_exec($ch);
-        curl_close($ch);
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/users?" . $data,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
 
-        $accounts = json_decode($response, true)['accounts'];
-        return view('corporation_users', compact('accounts'));
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+            $accounts = json_decode($response, true)['accounts'];
+            return view('corporation_users', compact('accounts'));
+        }
     }
 
 
     public function createRequestTransfer(Request $request)
     {
-        $ch = curl_init();
+        $curl = curl_init();
         $headers = [
             'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
         ];
@@ -75,26 +96,35 @@ class BankController extends Controller
             'contractor_id' => '0000000000000000AG0123456789A001',
             'target_service' => '20',
         ]);
-        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/users?' . $data;
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $accounts = json_decode($response, true)['accounts'];
-        return view('create_request_transfer', compact('accounts'));
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/users?" . $data,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+            $accounts = json_decode($response, true)['accounts'];
+            return view('create_request_transfer', compact('accounts'));
+        }
     }
 
     public function storeTransfer(Request $request)
     {
-
         $remitter_name = $request->input('remitter_name');
         $remitter_code = $request->input('remitter_code');
         $remitting_bank_branch_name = $request->input('branch_name_kana');
         $remitting_account_number = $request->input('account_number');
 
-        //createTransfer: 
-        $ch = curl_init();
         $headers = [
             'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
         ];
@@ -153,48 +183,76 @@ class BankController extends Controller
         ];
 
         $jsonData = json_encode($data);
-        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers';
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $transfer = json_decode($response, true);
-        return view('create_transfer_result')->with('transfer', $transfer);
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $jsonData,
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+            $transfer = json_decode($response, true);
+            return view('create_transfer_result')->with('transfer', $transfer);
+        }
     }
 
 
     public function showListRequestTransfer(Request $request)
     {
-        $ch = curl_init();
+        $curl = curl_init();
+
         $headers = [
             'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
         ];
         $data = http_build_query([
             'client_id' => '00000000',
             'contractor_id' => '0000000000000000AG0123456789A001',
-            'date_from' => '2023/07/05',
-            'date_to' => '2023/07/07',
+            'date_from' => '',
+            'date_to' => '',
 
         ]);
-        $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers/list?' . $data;
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        $response = curl_exec($ch);
-        curl_close($ch);
 
-        $transaction_list_info = json_decode($response, true)['transaction_list_info'];
-        return view('list_transfer_confirm', compact('transaction_list_info'));
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers/list?" . $data,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+            $transaction_list_info = json_decode($response, true)['transaction_list_info'];
+            return view('list_transfer_confirm', compact('transaction_list_info'));
+        }
     }
 
 
     public function confirmTransaction(Request $request)
     {
         $transaction_id = $request->input('transaction_id');
-
-        $ch = curl_init();
         $headers = [
             'Authorization: Bearer 7d0e8fddb23a40a2b5f73c2771e9c4c7',
         ];
@@ -210,15 +268,30 @@ class BankController extends Controller
 
         $jsonData = json_encode($confirmData);
 
+        $curl = curl_init();
         $url = 'https://sample.apigw.opencanvas.ne.jp/bizsol/v1/banks/0034/bulk_transfers/' . $transaction_id . '/submissions';
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-        $response = curl_exec($ch);
-        curl_close($ch);
-        $confirmTransaction = json_decode($response, true);
-        // dd($confirmTransaction);
-        return view('transaction_confirm_result')->with('confirmTransaction', $confirmTransaction);
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $jsonData,
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            echo "cURL Error #:" . $err;
+        } else {
+            $confirmTransaction = json_decode($response, true);
+            return view('transaction_confirm_result')->with('confirmTransaction', $confirmTransaction);
+        }
     }
 }
